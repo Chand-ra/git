@@ -105,6 +105,7 @@ static void test_reftable_ref_record_roundtrip(void)
 	for (int i = REFTABLE_REF_DELETION; i < REFTABLE_NR_REF_VALUETYPES; i++) {
 		struct reftable_record in = {
 			.type = BLOCK_TYPE_REF,
+			.u.ref.value_type = i,
 		};
 		struct reftable_record out = { .type = BLOCK_TYPE_REF };
 		struct strbuf key = STRBUF_INIT;
@@ -118,15 +119,19 @@ static void test_reftable_ref_record_roundtrip(void)
 		in.u.ref.value_type = i;
 		switch (i) {
 		case REFTABLE_REF_DELETION:
+			check(reftable_record_is_deletion(&in));
 			break;
 		case REFTABLE_REF_VAL1:
+			check(!reftable_record_is_deletion(&in));
 			set_hash(in.u.ref.value.val1, 1);
 			break;
 		case REFTABLE_REF_VAL2:
+			check(!reftable_record_is_deletion(&in));
 			set_hash(in.u.ref.value.val2.value, 1);
 			set_hash(in.u.ref.value.val2.target_value, 2);
 			break;
 		case REFTABLE_REF_SYMREF:
+			check(!reftable_record_is_deletion(&in));
 			in.u.ref.value.symref = xstrdup("target");
 			break;
 		}
